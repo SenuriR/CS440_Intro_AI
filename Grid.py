@@ -29,5 +29,9 @@ for i in range(size):
                 x
 
 # separate calculations of h values for cells on grid here...
-def manhattan():
-    x
+def manhattan(int x1, int x2, int y1, int y2):
+    return abs(x2 - x1) + abs(y2 - y1)
+    
+def f(int g, int h):
+    h = manhattan(x1,x2,y1,y2)
+    f = g + h
