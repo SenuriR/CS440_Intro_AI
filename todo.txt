@@ -18,3 +18,7 @@ F = G + h
 
 
 the 2 smallest f value children get added to the binary heap & explored as part of the open list
+
+
+where is the agent supposed to go? from one corner to another?
+    
