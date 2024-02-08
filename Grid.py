@@ -12,6 +12,7 @@ for i in range(size):
     print()
 
 nodes = {}
+g = 0 # g is traveled distance/cost
 
 for i in range(size):
     for j in range(size):
@@ -29,9 +30,5 @@ for i in range(size):
                 x
 
 # separate calculations of h values for cells on grid here...
-def manhattan(int x1, int x2, int y1, int y2):
-    return abs(x2 - x1) + abs(y2 - y1)
-    
-def f(int g, int h):
-    h = manhattan(x1,x2,y1,y2)
-    f = g + h
+def manhattan():
+    x
