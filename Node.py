@@ -1,7 +1,7 @@
 class Node:
-    def __init__(self, data=None, next_node=None,
+    def __init__(self, x=None, y=None, next_node=None,
     parent=None, g_value=None, h_value=None, f_value=None):
-        self.data = data
+        self.data = (x,y)
         self.next_node = next_node
         self.parent = parent
         self.g_value = g_value
