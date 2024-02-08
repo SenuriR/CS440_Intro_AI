@@ -18,7 +18,9 @@ for i in range(size):
         if grid[i][j] == 0:
             node = Node((i, j))
             if grid[i-1][j] == 0:
-                x
+                node1 = Node((i-1, j))
+                node.nextNode.add(node1)
+                node1.parent = (i,j)
             if grid[i][j-1] == 0:
                 x
             if grid[i+1][j] == 0:
