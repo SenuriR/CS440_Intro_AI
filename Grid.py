@@ -18,17 +18,40 @@ for i in range(size):
     for j in range(size):
         if grid[i][j] == 0:
             node = Node((i, j))
-            if grid[i-1][j] == 0:
-                node1 = Node((i-1, j))
-                node.nextNode.add(node1)
-                node1.parent = (i,j)
-            if grid[i][j-1] == 0:
-                x
-            if grid[i+1][j] == 0:
-                x
-            if grid[i][j+1] == 0:
-                x
+            if grid[i-1][j]:
+                if grid[i-1][j] == 0:
+                    node1 = Node((i-1, j))
+                    node.next_node = node1
+                    node1.parent = (i,j)
+            if grid[i][j-1]:
+                if grid[i][j-1] == 0:
+                    node2 = Node((i, j-1))
+                    node.next_node = node1
+                    node1.parent = (i,j)
+            if grid[i+1][j]:
+                if grid[i+1][j] == 0:
+                    node3 = Node((i+1, j))
+                    node.next_node = node1
+                    node1.parent = (i,j)
+            if grid[i][j+1]:
+                if grid[i][j+1] == 0:
+                    x = 0
+
+neighbors = {}
+neighbors.add(node1)
+neighbors.add(node2)
+neighbors.add(node3)
+neighbors.add(node4)
+
+for neighbor in neighbors:
+    if neighbor:
+        # this neighbor state is not blocked
+        x = 0
+    else:
+        # this neighbor state is blocked
+        x = 0
 
 # separate calculations of h values for cells on grid here...
 def manhattan():
-    x
+    # something
+    x = 0
