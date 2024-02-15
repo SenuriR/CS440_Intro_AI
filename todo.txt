@@ -22,3 +22,32 @@ the 2 smallest f value children get added to the binary heap & explored as part 
 
 where is the agent supposed to go? from one corner to another?
     
+2/15 **************************************************************************************
+Implementing the manhattan distance function
+implementing the binary heap
+*************************************************************************************
+Things to do still:
+    - Implement full A*
+-----------------------------------------------------------------------------------------
+https://www.when2meet.com/?23696617-Nvi8z
+
+Individual Tasks:
+    Senuri:
+    Archi:
+    Mateo:
+
+Next meetup: Archi & Mateo on Saturday 2/17
+    Senuri:
+    Archi:
+    Mateo:
+
+Next meetup: All on Saturday 2/17
+    Senuri:
+    Archi:
+    Mateo:
+Next meetup: Archi & Mateo on Saturday 2/17
+    Senuri:
+    Archi:
+    Mateo:
+
+
