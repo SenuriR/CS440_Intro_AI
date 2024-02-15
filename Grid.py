@@ -52,6 +52,7 @@ for neighbor in neighbors:
         x = 0
 
 # separate calculations of h values for cells on grid here...
-def manhattan():
-    # something
-    x = 0
+def manhattan(initialCell, goalCell):
+    origin = initialCell.data
+    goal = goalCell.data
+    return abs(origin[0] - goal[0]) + abs(origin[1] - goal[1])
