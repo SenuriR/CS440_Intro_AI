@@ -1,8 +1,48 @@
 import random
 from Node import Node
+
+# separate calculations of h values for cells on grid here...
+def manhattan(initialCell, goalCell):
+    origin = initialCell.data
+    return abs(origin[0] - goalCell) + abs(origin[1] - goalCell) #goalCell is used twice since x and y will always be the same (size 5)
+
+def aStar(graph, startNode, targetNode):
+    open = []
+    open.push(startNode)
+    closed = set() #set with all indices that have been searched for
+    while !open.isEmpty():
+        minCostNode = open.pop() #Lowest cost node / first node in priority q
+        closed.add(minCostNode.data)
+
+        if minCostNode == targetNode: #If target node is reached
+            finalPath = []
+            currNode = minCostNode
+            while currNode is not None:
+                finalPath.append(currNode.data)
+                currNode = currNode.parent
+            return finalPath[::-1] #Reverses array to get from start to finish
+        
+        for child in minCostNode.next_node: #Assuming all children are unblocked and arrays of indices
+            if child.data in closed: #If child has been visited 
+                continue
+            
+            #Checking to see if new path to children is shorter
+            shouldSkip = False 
+            for node in open:
+                if node.data == child.data:
+                    if node.g_value < child.g_value: 
+                        shouldSkip = True
+                        break
+            if shouldSkip:
+                continue
+
+            open.push(child) #if potential shorter path is found
+
+    return None #if no path is found
+
 size = 5
-grid = [[0 for i in range(size)] for j in range(size)]
-grid = [[random.randint(0,1) for i in range(size)] for j in range(size)]
+grid = [[0 for i in range(size)] for j in range(size)] #All cells unvisited
+grid = [[random.randint(0,1) for i in range(size)] for j in range(size)] #Marking random cells as visited and unblocked
 grid[0][0] = 0
 grid[size-1][size-1] = 0
 
@@ -12,9 +52,9 @@ for i in range(size):
     print()
 
 nodes = {}
-g = 0 # g is traveled distance/cost
+g = 1 # g is traveled distance/cost
 
-for i in range(size):
+for i in range(size): #Searching through every neighbor and creating a graph with nodes, and assigning values to each node
     for j in range(size):
         if grid[i][j] == 0:
             node = Node((i, j))
@@ -42,7 +82,7 @@ for i in range(size):
         compare = []
         for node in node.next_node:
             node.g_value = g
-            node.h_value = manhattan(node)
+            node.h_value = manhattan(node,size-1)
             node.f_value = node.g_value + node.h_value
             compare.append(node)
         
@@ -52,8 +92,4 @@ for i in range(size):
         
         g += 0
 
-# separate calculations of h values for cells on grid here...
-def manhattan(initialCell, goalCell):
-    origin = initialCell.data
-    goal = goalCell.data
-    return abs(origin[0] - goal[0]) + abs(origin[1] - goal[1])
+
