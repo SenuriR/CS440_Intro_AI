@@ -1,46 +1,48 @@
 import random
 from Node import Node
+import binHeap
+import heapq
 
-# separate calculations of h values for cells on grid here...
 def manhattan(initialCell, goalCell):
-    origin = initialCell.data
-    return abs(origin[0] - goalCell) + abs(origin[1] - goalCell) #goalCell is used twice since x and y will always be the same (size 5)
+    return abs(initialCell.data[0] - goalCell.data[0]) + abs(initialCell.data[1] - goalCell.data[1]) # goalCell is used twice since x and y will always be the same (size 5)
 
-def aStar(graph, startNode, targetNode):
-    open = []
-    open.push(startNode)
-    closed = set() #set with all indices that have been searched for
-    while !open.isEmpty():
-        minCostNode = open.pop() #Lowest cost node / first node in priority q
-        closed.add(minCostNode.data)
+def aStar(grid, start, target): #grid must be 2d array, start and target must be 1d arrays of two elements
+    
+    startNode = Node(start[0],start[1],None,None,None,0,manhattan(Node(start[0],start[1]),Node(target[0],target[1])))
+    targetNode = Node(target[0],target[1])
 
-        if minCostNode == targetNode: #If target node is reached
-            finalPath = []
-            currNode = minCostNode
-            while currNode is not None:
-                finalPath.append(currNode.data)
-                currNode = currNode.parent
-            return finalPath[::-1] #Reverses array to get from start to finish
-        
-        for child in minCostNode.next_node: #Assuming all children are unblocked and arrays of indices
-            if child.data in closed: #If child has been visited 
-                continue
-            
-            #Checking to see if new path to children is shorter
-            shouldSkip = False 
-            for node in open:
-                if node.data == child.data:
-                    if node.g_value < child.g_value: 
-                        shouldSkip = True
-                        break
-            if shouldSkip:
-                continue
+    openList = [] #open list
+    heapq.heappush(openList,startNode)
+    closed = set() #closed list
+    while openList:
+      currNode = heapq.heappop(openList)
 
-            open.push(child) #if potential shorter path is found
+      if tuple(currNode.data) in closed:
+        continue
+
+      if currNode.data == targetNode.data: # Path found
+        finalPath = []
+        while currNode: # While a parent exists for the node
+          finalPath.append(currNode.data)
+          currNode = currNode.parent
+        return finalPath[::1] # Returning reversed path so that the array starts at startingNode and ends with targetNode
+
+      closed.add(tuple(currNode.data))
+
+      for dx, dy in [(-1,0), (1,0), (0,-1), (0,1)]: # All neighbors for current cell
+        x = currNode.data[0] + dx
+        y = currNode.data[1] + dy
+
+        if 0 <= x < len(grid) and 0 <= y < len(grid[0]) and grid[x][y] == 0:
+          neighbor = Node(x,y,None,None,None,currNode.g_value + 1,manhattan(Node(x,y),targetNode))
+          neighbor.parent = currNode
+
+          if (x,y) not in closed:
+            heapq.heappush(openList, neighbor)
 
     return None #if no path is found
 
-size = 5
+size = 101
 grid = [[0 for i in range(size)] for j in range(size)] #All cells unvisited
 grid = [[random.randint(0,1) for i in range(size)] for j in range(size)] #Marking random cells as visited and unblocked
 grid[0][0] = 0
@@ -52,7 +54,8 @@ for i in range(size):
     print()
 
 nodes = {}
-g = 1 # g is traveled distance/cost
+heap = []
+g = 0 # g is traveled distance/cost
 
 for i in range(size): #Searching through every neighbor and creating a graph with nodes, and assigning values to each node
     for j in range(size):
@@ -87,9 +90,9 @@ for i in range(size): #Searching through every neighbor and creating a graph wit
             compare.append(node)
         
         sorted_nodes = sorted(compare, key=lambda node: node.f_value, reverse=True)
-        heap.add(sorted_nodes[0]) # edit once heap is finalized
-        heap.add(sorted_nodes[1])
+        binHeap.insertKey(heap,sorted_nodes[0]) # edit once heap is finalized
+        binHeap.insertKey(heap,sorted_nodes[1])
         
-        g += 0
+        g += 1
 
 
