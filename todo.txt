@@ -82,7 +82,7 @@ Individual Tasks:
         git stuff
     Senuri: Make sure neighbors are all initialized
     Archi: Binary heap
-    Mateo: 
+    Mateo: Will update tomorrow
 
         Part 1 of 6
         Binary heap open list implementation
