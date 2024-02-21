@@ -44,7 +44,7 @@ def aStar(grid, start, target): #grid must be 2d array, start and target must be
 
 size = 101
 grid = [[0 for i in range(size)] for j in range(size)] #All cells unvisited
-grid = [[random.randint(0,1) for i in range(size)] for j in range(size)] #Marking random cells as visited and unblocked
+grid = [[random.choices([0, 1], weights=[0.7, 0.3], k=1)[0] for i in range(size)] for j in range(size)] #Marking random cells as visited and unblocked
 grid[0][0] = 0
 grid[size-1][size-1] = 0
 
