@@ -4,6 +4,7 @@ import binHeap
 import heapq
 
 updatedHeuristicsMap = {}
+# I think we may need to have a better way of tracking g values
 
 def updatedHeuristics(finalNode):
   curr = finalNode
