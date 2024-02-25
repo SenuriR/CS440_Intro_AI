@@ -59,6 +59,38 @@ def aStar(grid, start, target): #grid must be 2d array, start and target must be
 
     return None #if no path is found
 
+def repeatedForwardAStar(grid, start, target):
+  startNode = Node(start[0],start[1],None,None,None,0,manhattan(Node(start[0],start[1]),Node(target[0],target[1])))
+  targetNode = Node(target[0],target[1])
+  openList = [] #open list
+  heapq.heappush(openList,startNode)
+  closed = set() #closed list
+  while openList:
+    currNode = heapq.heappop(openList)
+    if currNode.data == targetNode.data: # Path found
+        finalPath = []
+        while currNode: # While a parent exists for the node
+          finalPath.append(currNode.data)
+          currNode = currNode.parent
+        return finalPath[::1] # Returning reversed path so that the array starts at startingNode and ends with targetNode
+    closed.add(tuple(currNode.data))
+    for dx, dy in [(-1,0), (1,0), (0,-1), (0,1)]: # All neighbors for current cell
+        x = currNode.data[0] + dx
+        y = currNode.data[1] + dy
+        temp_g = currNode.g + manhattan(currNode,Node(x,y)); # for later if needed for tie breaking...
+        if(0 <= x < grid.length()) and (0 <= y < grid.length()):
+          if grid[x][y] == 1:
+            continue
+          else:
+            continue
+        if 0 <= x < len(grid) and 0 <= y < len(grid[0]) and grid[x][y] == 0:
+          neighbor = Node(x,y,None,None,None,currNode.g_value + 1,manhattan(Node(x,y),targetNode))
+          neighbor.parent = currNode
+
+          if (x,y) not in closed:
+            heapq.heappush(openList, neighbor)
+    return False
+    
 
 def adaptiveA(grid, start, target):
     startNode = Node(start[0],start[1],None,None,None,0,manhattan(Node(start[0],start[1]),Node(target[0],target[1])))
@@ -97,47 +129,16 @@ def adaptiveA(grid, start, target):
 
     return None #if no path is found
 
-########### TESTING
-
-size = 15
+size = 101
 grid = [[0 for i in range(size)] for j in range(size)] #All cells unvisited
 grid = [[random.choices([0, 1], weights=[0.7, 0.3], k=1)[0] for i in range(size)] for j in range(size)] #Marking random cells as visited and unblocked
 grid[0][0] = 0
 grid[size-1][size-1] = 0
 
-numOfSearches = 1 # Amount of times A* / Adaptive A* is ran
-
-successes, failures = 0,0
-for i in range(0,numOfSearches): 
-
-  grid = [[random.choices([0, 1], weights=[0.7, 0.3], k=1)[0] for _ in range(size)] for _ in range(size)]
-  startCoords = [random.randint(0, size-1),random.randint(0, size-1)]
-  endCoords = [random.randint(0, size-1),random.randint(0, size-1)]
-
-  printedPath = aStar(grid,startCoords,endCoords)
-
-  if printedPath is not None:
-    for array in printedPath: #now import dfs and check to see if the path exists and this works@
-      grid[array[0]][array[1]] = 'x'
-
-    grid[startCoords[0]][startCoords[1]] = 's' #starting cell, light blue
-    grid[endCoords[0]][endCoords[1]] = 't' #end cell, dark blue
-    successes += 1
-    print()
-  else:
-    print()
-    print("Path does not exist")
-    print()
-    failures += 1
-
-  '''Use if numOfSearches > 1'''
-  #print(f"Success: {successes} / Failures: {failures} / Path Creation Rate: {successes / numOfSearches}")
-
 for i in range(size):
     for j in range(size):
         print(grid[i][j], end = ' ')
     print()
-
 '''
 nodes = {}
 heap = []
@@ -181,5 +182,4 @@ for i in range(size): #Searching through every neighbor and creating a graph wit
         
         g += 1
 '''
-
 
