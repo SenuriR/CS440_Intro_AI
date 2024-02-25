@@ -97,17 +97,48 @@ def adaptiveA(grid, start, target):
 
     return None #if no path is found
 
-size = 101
+########### TESTING
+
+size = 15
 grid = [[0 for i in range(size)] for j in range(size)] #All cells unvisited
 grid = [[random.choices([0, 1], weights=[0.7, 0.3], k=1)[0] for i in range(size)] for j in range(size)] #Marking random cells as visited and unblocked
 grid[0][0] = 0
 grid[size-1][size-1] = 0
+
+numOfSearches = 1 # Amount of times A* / Adaptive A* is ran
+
+successes, failures = 0,0
+for i in range(0,numOfSearches): 
+
+  grid = [[random.choices([0, 1], weights=[0.7, 0.3], k=1)[0] for _ in range(size)] for _ in range(size)]
+  startCoords = [random.randint(0, size-1),random.randint(0, size-1)]
+  endCoords = [random.randint(0, size-1),random.randint(0, size-1)]
+
+  printedPath = aStar(grid,startCoords,endCoords)
+
+  if printedPath is not None:
+    for array in printedPath: #now import dfs and check to see if the path exists and this works@
+      grid[array[0]][array[1]] = 'x'
+
+    grid[startCoords[0]][startCoords[1]] = 's' #starting cell, light blue
+    grid[endCoords[0]][endCoords[1]] = 't' #end cell, dark blue
+    successes += 1
+    print()
+  else:
+    print()
+    print("Path does not exist")
+    print()
+    failures += 1
+
+  '''Use if numOfSearches > 1'''
+  #print(f"Success: {successes} / Failures: {failures} / Path Creation Rate: {successes / numOfSearches}")
 
 for i in range(size):
     for j in range(size):
         print(grid[i][j], end = ' ')
     print()
 
+'''
 nodes = {}
 heap = []
 g = 0 # g is traveled distance/cost
@@ -149,5 +180,6 @@ for i in range(size): #Searching through every neighbor and creating a graph wit
         binHeap.insertKey(heap,sorted_nodes[1])
         
         g += 1
+'''
 
 
