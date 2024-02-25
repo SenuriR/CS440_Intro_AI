@@ -4,6 +4,7 @@ import binHeap
 import heapq
 
 updatedHeuristicsMap = {}
+g_vals = {}
 # I think we may need to have a better way of tracking g values
 
 def updatedHeuristics(finalNode):
@@ -61,48 +62,53 @@ def aStar(grid, start, target): #grid must be 2d array, start and target must be
 
     return None #if no path is found
 
-def repeatedForwardsAStar(grid, start, target):
-  # initialize start and target nodes
-  startNode = Node(start[0],start[1],None,None,None,0,manhattan(Node(start[0],start[1]),Node(target[0],target[1])))
-  targetNode = Node(target[0],target[1])
-  openList = [] #open list
-  heapq.heappush(openList,(startNode.f_value, startNode))
-  closed = set() #closed list -- here it contains nodes
-  while openList:
-    currNode = heapq.heappop(openList)
-    if currNode == targetNode: # Path found
+def repeatedForwardsAStar(grid, start, target): #grid must be 2d array, start and target must be 1d arrays of two elements
+
+    startNode = Node(start[0],start[1],None,None,None,0,manhattan(Node(start[0],start[1]),Node(target[0],target[1])))
+    g_vals[(start[0],start[1])] = manhattan(Node(start[0],start[1]),Node(target[0],target[1]))
+    targetNode = Node(target[0],target[1])
+
+    openList = [] #open list
+    # heapq.heappush(openList,startNode)
+    heapq.heappush(openList,(startNode.f_value, startNode))
+    closed = set() #closed list
+    while openList:
+      currNode = heapq.heappop(openList)[1]
+      print(type(currNode))
+      if tuple(currNode.data) in closed: # Cannot append arrays to an sets, so i made it into a tuple
+        continue
+
+      if currNode.data == targetNode.data: # Path found
         finalPath = []
         while currNode: # While a parent exists for the node
           finalPath.append(currNode.data)
           currNode = currNode.parent
         return finalPath[::1] # Returning reversed path so that the array starts at startingNode and ends with targetNode
-    # closed.add(tuple(currNode.data))
-    closed.add(currNode)
-    for dx, dy in [(-1,0), (1,0), (0,-1), (0,1)]: # All neighbors for current cell
+
+      closed.add(tuple(currNode.data))
+
+      for dx, dy in [(-1,0), (1,0), (0,-1), (0,1)]: # All neighbors for current cell
         x = currNode.data[0] + dx
         y = currNode.data[1] + dy
-        neighborNode = Node(x, y)
-        tmp_g = currNode.g_value + manhattan(currNode, neighborNode)
 
-        # if the x,y pair is out of bounds or the cell is blocked
-        if(0 <= x < grid[0].length()) and (0 <= y < grid[1].length()):
-          if grid[x][y] == 1:
-            continue
-        else:
-          continue
-
-        # tie breaker
-        matching_node = next(node for node in closed if node.x == neighborNode.x and node.y == neighborNode.y)
-        # ^ I had to change the above line bc the "in" comparator was comparing references, not the specific attributes we care about
-        # ^ this change might effect efficiency
-        if matching_node.g_value >= tmp_g: # the existing node in closed won
-          continue;
-        if matching_node.g_value > tmp_g: # the new neighbor version won
-          neighborNode.parent = currNode
-          neighborNode.g_value = tmp_g # cost we've been through
-          neighborNode.f_value = tmp_g + manhattan(neighborNode, targetNode)
-          heapq.heappush(openList, (neighborNode.f_value, neighborNode))
-    return False
+        if 0 <= x < len(grid) and 0 <= y < len(grid[0]) and grid[x][y] == 0:
+          g_val = currNode.g_value + 1 
+          
+          if (x,y) in closed: # tie breaker
+            print(x,y)
+            matchingNodeGval = g_vals[(x,y)]
+            print(type(matchingNodeGval))
+            if matchingNodeGval >= g_val:
+              continue # the existing node in closed list wins
+          # heapq.heappush(openList, neighbor)
+          neighbor = Node(x,y)
+          neighbor.g_value = g_val
+          neighbor.h_value = manhattan(Node(x,y),targetNode)
+          neighbor.parent = currNode
+          g_vals[(neighbor.data[0], neighbor.data[1])] = g_val
+          heapq.heappush(openList, (neighbor.f_value, neighbor))
+          
+    return None #if no path is found
     
 def repeatedBackwardsAStar(grid, start, target):
   # initialize start and target nodes
