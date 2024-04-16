@@ -170,6 +170,7 @@ class Counter(dict):
     all = self.items()
     values = [x[1] for x in all]
     maxIndex = values.index(max(values))
+    print("getting an error around here -- sen")
     return all[maxIndex][0]
   
   def sortedKeys(self):
