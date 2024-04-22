@@ -163,7 +163,7 @@ def readCommand( argv ):
   from optparse import OptionParser  
   parser = OptionParser(USAGE_STRING)
   
-  parser.add_option('-c', '--classifier', help=default('The type of classifier'), choices=['mostFrequent', 'nb', 'naiveBayes', 'perceptron', 'mira', 'minicontest'], default='mostFrequent')
+  parser.add_option('-c', '--classifier', help=default('The type of classifier'), choices=['mostFrequent', 'nb', 'naiveBayes', 'perceptron', 'mira', 'minicontest', 'neuralNetwork'], default='mostFrequent')
   parser.add_option('-d', '--data', help=default('Dataset to use'), choices=['digits', 'faces'], default='digits')
   parser.add_option('-t', '--training', help=default('The size of the training set'), default=100, type="int")
   parser.add_option('-f', '--features', help=default('Whether to use enhanced features'), default=False, action="store_true")
@@ -252,6 +252,13 @@ def readCommand( argv ):
   elif(options.classifier == 'minicontest'):
     import minicontest
     classifier = minicontest.contestClassifier(legalLabels)
+  elif(options.classifier == 'neuralNetwork'):
+    import neuralNetwork
+    if (options.data == "faces"):
+      # NeuralNetworkClassifier takes arguments: legalLabels, numInput, numHidden, numOutput, numData, lambda
+      classifier = neuralNetwork.NeuralNetworkClassifier(legalLabels, FACE_DATUM_HEIGHT*FACE_DATUM_WIDTH,500,1,options.training, 0.03)
+    else:
+        classifier = neuralNetwork.NeuralNetworkClassifier(legalLabels,DIGIT_DATUM_HEIGHT*DIGIT_DATUM_WIDTH,50,10,options.training,3.5)
   else:
     print( "Unknown classifier:", options.classifier)
     print (USAGE_STRING)
