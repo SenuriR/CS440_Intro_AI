@@ -39,14 +39,14 @@ class NeuralNetworkClassifier():
 
     
     '''
-    backPropagation implements the back propagation step of neural network classification.
+    backProp implements the back propagation step of neural network classification.
     First step: obtain input- and output-weights
-    Second step: compute (lower)delta - y, and compute errors...
-    Third step: compute (uppder)delta... given (lower)delta computations from second step
+    Second step: compute (lower case) delta - y, compute errors...
+    Third step: compute (upper case) delta... given (lower case )delta computations from second step
     Fourth step: compute average regularized gradient D
     Fifth step: return updated weight vector
     '''
-    def backPropagation(self, theta):
+    def backProp(self, theta):
         # First step
         inPreReshape = theta[0:self.numHidden * (self.numInput + 1)]
         outPreReshape = theta[-self.numOutput * (self.numHidden + 1):]
@@ -54,21 +54,23 @@ class NeuralNetworkClassifier():
         self.outputWeights = outPreReshape.reshape((self.numOutput, self.numHidden + 1))
 
         # Second step
-        outputError = self.outputActivation - self.outputTruth
-        hiddenError = self.outputWeights[:, :-1].T.dot(outputError) * derivActivationFunctionSigmoid(self.hiddenActivation[:-1:])
+        outputError = self.outputActivation - self.trueOut
+        hiddenError = self.outputWeights[:, :-1].T.dot(outputError) * derivActivationFunctionSigmoid(self.hiddenActivation[:-1:]) # FROM NOTES
 
         # Third step
-        self.outputChange = outputError.dot(self.hiddenActivation.T) * (1/self.numData)
-        self.inputChange = hiddenError.dot(self.inputActivation.T) * (1/self.numData)
+        self.outputDelta = (1/self.numData) * outputError.dot(self.hiddenActivation.T)
+        self.inputDelta = (1/self.numData) * hiddenError.dot(self.inputActivation.T)
 
         # Fourth step
         regularizationOut = self.l * self.outputWeights[:, :-1]
         regularizationIn = self.l * self.inputWeights[:, :-1]
-        self.outputChange[:, :-1].__add__(regularizationOut)
-        self.inputChange[:, :-1].__add__(regularizationIn)
+        self.outputDelta[:, :-1].__add__(regularizationOut)
+        self.inputDelta[:, :-1].__add__(regularizationIn)
 
         # Fifth step
-        return np.append(self.inputChange.ravel(), self.outputChange.ravel())
+        flatIn = self.inputDelta.ravel()
+        flatOut = self.outputDelta.ravel()
+        return np.append(flatIn, flatOut)
 
     def train(self, trainingData, trainingLabels, validationData, validationLabels):
         self.trainData = trainingData
@@ -80,9 +82,18 @@ class NeuralNetworkClassifier():
 
         iteration = 100
         self.inputActivation[:-1, :] = training_set.transpose()
-        self.outputTruth = self.getTruthMat(trainingLabels)
+        self.trueOut = np.zeros((self.numOutput, self.numData))
+        for ithLabel in range(self.numData):
+            label = trainingLabels[ithLabel]
+            if self.numOutput != 1:
+                self.trueOut[label, ithLabel] = 1
+            else:
+                self.trueOut[:,1] = label # if there is one output neuron
+    
 
-        theta = np.append(self.inputWeights.ravel(), self.outputWeights.ravel())
+        flatInWeights = self.inputWeights.ravel()
+        flatOutWeights = self.outputWeights.ravel()
+        theta = np.append(flatInWeights, flatOutWeights)
         theta = opt.fmin_cg(self.feedForward, theta, fprime=self.backPropagate, maxiter=iteration) # final theta (weights) AFTER both forward and backward
         inPreReshape = theta[0:self.numHidden * (self.numInput + 1)]
         outPreReshape = theta[-self.numOutput * (self.numHidden + 1):]
@@ -102,16 +113,6 @@ class NeuralNetworkClassifier():
             feat_train.append(feat)
         training_set = np.array(feat_train, np.int32)   
         return training_set
-
-    def getTruthMat(self, trainingLabels):
-        truth = np.zeros((self.numOutput, self.numData))
-        for ithLabel in range(self.numData):
-            label = trainingLabels[ithLabel]
-            if self.numOutput != 1:
-                truth[label, ithLabel] = 1
-            else:
-                truth[:,1] = label # if there is one output neuron
-        return truth
 
 # useful functions:
 def activationFunctionSigmoid(x):
