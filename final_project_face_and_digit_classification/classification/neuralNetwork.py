@@ -37,8 +37,41 @@ class NeuralNetworkClassifier():
         self.biasVector = np.ones(biasVectorDims)
 
     # (step 2 - implement forward propagation to get h_theta_Xi for any instance Xi)
-    def forwardProp(self):
-        print("Implement forward propagation here")
+    def forwardProp(self, inputData):
+        """
+        inputData: A numpy array of shape (numFeatures, numData) representing the input data.
+
+        Step 1: Ensure an explicit bias term that nn can work from
+        Step 2: Calculate weighed sum of inputs in hidden layer
+        Step 3: Apply activation function (signmoid) to hidden layer
+        Step 4: Calculate weighed sum of inputs for output layer
+        Step 5: Activation function to output layer, softmax for number classification, sigmoid for face detection
+
+        Returns:
+            A numpy array of shape (numOutput, numData) representing the network's output.
+        """
+
+        # Step 1
+        self.inputActivation[0:, :] = np.concatenate((inputData), axis=0)
+
+        # Step 2
+        self.hiddenActivation[1:, :] = np.dot(self.inputWeights, self.inputActivation)
+
+        # Step 3
+        self.hiddenActivation[1:, :] = activationFunctionSigmoid(self.hiddenActivation[1:, :])
+
+        # Step 4 
+        self.outputActivation[1:, :] = np.dot(self.outputweights, self.hiddenActivation)
+
+        # Step 5
+        if self.numClasses > 2: # Numbers
+            self.outputActivation[1:, :] = softmax(self.outputActivation[1:, :])
+        else: # Gace detection
+            self.outputActivation[1:, :] = activationFunctionSigmoid(self.outputActivation[1:, :])
+
+        return self.outputActivation[1:, :]  # Output w/o bias
+
+
 
     
     '''
@@ -132,3 +165,7 @@ def activationFunctionSigmoid(x):
 def derivActivationFunctionSigmoid(y):
     d = y * (1.0 - y)
     return d
+
+
+def softmax(x):
+    return np.exp(x) / np.sum(np.exp(x), axis=0, keepdims=True)
