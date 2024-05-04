@@ -36,6 +36,8 @@ def basicFeatureExtractorDigit(datum):
         features[(x,y)] = 1
       else:
         features[(x,y)] = 0
+  # print(features.values())
+  # print("\n")
   return features
 
 def basicFeatureExtractorFace(datum):

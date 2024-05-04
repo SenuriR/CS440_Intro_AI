@@ -1,5 +1,5 @@
 import numpy as np
-import scipy.optimize as opt
+import scipy.optimize as minimize
 
 class NeuralNetworkClassifier():
     def __init__(self, legalLabels, numInput, numHidden, numOutput, numData, l):
@@ -37,40 +37,24 @@ class NeuralNetworkClassifier():
         self.biasVector = np.ones(biasVectorDims)
 
     # (step 2 - implement forward propagation to get h_theta_Xi for any instance Xi)
-    def forwardProp(self, inputData):
-        """
-        inputData: A numpy array of shape (numFeatures, numData) representing the input data.
+    def feedForward(self, thetaVec):
+        "reshape thetaVec into two weights matrices"
+        self.inputWeights = thetaVec[0:self.numHidden * (self.numInput + 1)].reshape((self.numHidden, self.numInput + 1))
+        self.outputWeights = thetaVec[-self.numOutput * (self.numHidden + 1):].reshape((self.numOutput, self.numHidden + 1))
 
-        Step 1: Ensure an explicit bias term that nn can work from
-        Step 2: Calculate weighed sum of inputs in hidden layer
-        Step 3: Apply activation function (signmoid) to hidden layer
-        Step 4: Calculate weighed sum of inputs for output layer
-        Step 5: Activation function to output layer, softmax for number classification, sigmoid for face detection
+        "hidden activation"
+        hiddenZ = self.inputWeights.dot(self.inputActivation)
+        self.hiddenActivation[:-1, :] = activationFunctionSigmoid(hiddenZ)
 
-        Returns:
-            A numpy array of shape (numOutput, numData) representing the network's output.
-        """
+        "output activation"
+        outputZ = self.outputWeights.dot(self.hiddenActivation)
+        self.outputActivation = activationFunctionSigmoid(outputZ)
 
-        # Step 1
-        self.inputActivation[0:, :] = np.concatenate((inputData), axis=0)
-
-        # Step 2
-        self.hiddenActivation[1:, :] = np.dot(self.inputWeights, self.inputActivation)
-
-        # Step 3
-        self.hiddenActivation[1:, :] = activationFunctionSigmoid(self.hiddenActivation[1:, :])
-
-        # Step 4 
-        self.outputActivation[1:, :] = np.dot(self.outputweights, self.hiddenActivation)
-
-        # Step 5
-        if self.numClasses > 2: # Numbers
-            self.outputActivation[1:, :] = softmax(self.outputActivation[1:, :])
-        else: # Gace detection
-            self.outputActivation[1:, :] = activationFunctionSigmoid(self.outputActivation[1:, :])
-
-        return self.outputActivation[1:, :]  # Output w/o bias
-    
+        "calculate J"
+        costMatrix = self.trueOut * np.log(self.outputActivation) + (1 - self.trueOut) * np.log(
+            1 - self.outputActivation)
+        regulations = (np.sum(self.outputWeights[:, :-1] ** 2) + np.sum(self.inputWeights[:, :-1] ** 2)) * self.l / 2
+        return (-costMatrix.sum() + regulations) / self.numData
     '''
     backProp implements the back propagation step of neural network classification.
     First step: obtain input- and output-weights
@@ -109,16 +93,13 @@ class NeuralNetworkClassifier():
         flatIn = self.inputDelta.ravel()
         flatOut = self.outputDelta.ravel()
         return np.append(flatIn, flatOut)
-    
-    def gradientChecking(self):
-        print("sen")
 
     def train(self, trainingData, trainingLabels, validationData, validationLabels):
-        # basic intiialization
-        self.trainData = trainingData
-        self.trainLabels = trainingLabels
-        self.validData = validationData
-        self.validLabels = validationLabels
+        # basic intiialization - I changed all these inputs to lists
+        self.trainData = list(trainingData)
+        self.trainLabels = list(trainingLabels)
+        self.validData = list(validationData)
+        self.validLabels = list(validationLabels)
 
         training_set = self.getTrainingSet()
 
@@ -131,20 +112,22 @@ class NeuralNetworkClassifier():
                 self.trueOut[label, ithLabel] = 1
             else:
                 self.trueOut[:,1] = label # if there is one output neuron
-    
+
         flatInWeights = self.inputWeights.ravel()
-        flatOutWeights = self.outputWeights.ravel()
+        flatOutWeights = self.outputweights.ravel()
         theta = np.append(flatInWeights, flatOutWeights)
-        theta = opt.fmin_cg(self.feedForward, theta, fprime=self.backPropagate, maxiter=iteration) # final theta (weights) AFTER both forward and backward
+        theta = minimize.fmin_cg(self.feedForward, theta, fprime=self.backProp, maxiter=iteration) # final theta (weights) AFTER both forward and backward
         inPreReshape = theta[0:self.numHidden * (self.numInput + 1)]
         outPreReshape = theta[-self.numOutput * (self.numHidden + 1):]
         self.inputWeights = inPreReshape.reshape((self.numHidden, self.numInput + 1))
         self.outputWeights = outPreReshape.reshape((self.numOutput, self.numHidden + 1))
 
-    def classification(self, testData):
+
+    def classify(self, testData):
         self.testData = testData
         feat_test_set = self.getTestSet()
 
+        print(feat)
         if feat_test_set.shape[1] != self.inputActivation.shape[1]:
             self.inputActivation = np.ones((self.numInput + 1, feat_test_set.shape[1]))
             self.hiddenActivation = np.ones((self.numHidden + 1, feat_test_set.shape[1]))
@@ -178,6 +161,7 @@ class NeuralNetworkClassifier():
         feat_test_set = test_set.transpose()
         return feat_test_set
     
+    
     def getTrainingSet(self):
         # the training size will be the size of the list of the training data given
         self.training_size = len(list(self.trainData))
@@ -192,6 +176,7 @@ class NeuralNetworkClassifier():
         training_set = np.array(feat_train, np.int32) # found this np.int32 online, should be helpful here
         return training_set
 
+    
 # useful functions:
 def activationFunctionSigmoid(x):
     g = 1.0 / (1.0 + np.exp(-x))

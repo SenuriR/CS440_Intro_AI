@@ -162,10 +162,10 @@ def convertToInteger(data):
   """
   Helper function for file reading.
   """
-  if type(data) != type([]):
-    return IntegerConversionFunction(data)
+  if not isinstance(data, list):
+      return IntegerConversionFunction(data)
   else:
-    return map(convertToInteger, data)
+      return list(map(convertToInteger, data))
 
 # Testing
 
