@@ -145,29 +145,21 @@ class NeuralNetworkClassifier():
         self.outputWeights = outPreReshape.reshape((self.numOutput, self.numHidden + 1))
 
     def classification(self, testData):
-        "input activation"
-        "for classify in case the difference of size between trainData and testData "
-        self.size_test = len(list(testData))
-        features_test = [];
-        for datum in testData:
-            feature = list(datum.values())
-            features_test.append(feature)
-        test_set = np.array(features_test, np.int32)
-        feature_test_set = test_set.transpose()
+        self.testData = testData
+        feat_test_set = self.getTestSet()
 
-        if feature_test_set.shape[1] != self.inputActivation.shape[1]:
-            self.inputActivation = np.ones((self.input + 1, feature_test_set.shape[1]))
-            self.hiddenActivation = np.ones((self.hidden + 1, feature_test_set.shape[1]))
-            self.outputActivation = np.ones((self.output + 1, feature_test_set.shape[1]))
-        self.inputActivation[:-1, :] = feature_test_set
+        if feat_test_set.shape[1] != self.inputActivation.shape[1]:
+            self.inputActivation = np.ones((self.numInput + 1, feat_test_set.shape[1]))
+            self.hiddenActivation = np.ones((self.numHidden + 1, feat_test_set.shape[1]))
+            self.outputActivation = np.ones((self.numOutput + 1, feat_test_set.shape[1]))
+        self.inputActivation[:-1, :] = feat_test_set
 
-        "hidden activation"
         hiddenZ = self.inputWeights.dot(self.inputActivation)
-        self.hiddenActivation[:-1, :] = sigmoid(hiddenZ)
+        self.hiddenActivation[:-1, :] = activationFunctionSigmoid(hiddenZ)
 
-        "output activation"
         outputZ = self.outputWeights.dot(self.hiddenActivation)
-        self.outputActivation = sigmoid(outputZ)
+        self.outputActivation = activationFunctionSigmoid(outputZ)
+        
         if self.output > 1:
             return np.argmax(self.outputActivation, axis=0).tolist()
         else:
@@ -179,18 +171,28 @@ class NeuralNetworkClassifier():
     
 #################### HELPER FUNCTIONS ####################
 
+    def getTestSet(self):
+        self.size_test = len(list(self.testData))
+        feat_test = []
+        for data in self.testData:
+            feat = list(data.values())
+            feat_test.append(feat)
+        test_set = np.array(feat_test, np.int32)
+        feat_test_set = test_set.transpose()
+        return feat_test_set
+    
     def getTrainingSet(self):
         # the training size will be the size of the list of the training data given
         self.training_size = len(list(self.trainData))
         feat_train = []
-        # for every data input in the training data
+        # for every data input in the training datatestData
         for data in self.trainData:
             # the feature will just be the list of data values
             feat = list(data.values())
             # add the new feat to the features we want to use to train nn
             feat_train.append(feat)
         
-        training_set = np.array(feat_train, np.int32)   
+        training_set = np.array(feat_train, np.int32) # found this np.int32 online, should be helpful here
         return training_set
 
 # useful functions:
