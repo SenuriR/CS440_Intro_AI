@@ -50,35 +50,41 @@ class NeuralNetworkClassifier():
     Fifth step: return updated weight vector
     '''
     def backProp(self, theta):
-        # First step
+        # theta is currently a vector that contains all the (updated) weights involved with our NN after going through the feed forward process
+        # we want to split this vector up into inputWeights and outputWeights
         weights_in_hidden = theta[0:self.numHidden * (self.numInput + 1)]
         weights_hidden_out = theta[-self.numOutput * (self.numHidden + 1):]
         dim_hidden_in = (self.numHidden, self.numInput + 1)
         dim_out_hidden = (self.numOutput, self.numHidden + 1)
-        # now we can successfully define matrices: inputWeights - weights btw input and hidden and outputWeights - weights btw hidden and output
         self.inputWeights = weights_in_hidden.reshape(dim_hidden_in)
         self.outputWeights = weights_hidden_out.reshape(dim_out_hidden)
 
-        # Second step
-        outputError = self.outputActivation - self.trueOut
-        hiddenError = self.outputWeights[:, :-1].T.dot(outputError) * derivActivationFunctionSigmoid(self.hiddenActivation[:-1:]) # FROM NOTES
+        # calculate lower case delta
+        finalOutputError = self.outputActivation - self.trueOut
+        # by hiddenError I mean all the errors inside the net that we have to use the formula in notes for (slide 41 lecture NN)
+        output_exclude_final_vector = self.outputWeights[:, :-1]
+        weight_tranpose_error = output_exclude_final_vector.T.dot(finalOutputError)
+        gprime_activation = derivActivationFunctionSigmoid(self.hiddenActivation[:-1:])
+        hiddenError = weight_tranpose_error * gprime_activation
 
-        # Third step
-        self.outputDelta = (1/self.numData) * outputError.dot(self.hiddenActivation.T)
+        # calculate upper case delta and add regulations
+        self.outputDelta = (1/self.numData) * finalOutputError.dot(self.hiddenActivation.T)
         self.inputDelta = (1/self.numData) * hiddenError.dot(self.inputActivation.T)
-
-        # Fourth step
         regularizationOut = self.l * self.outputWeights[:, :-1]
         regularizationIn = self.l * self.inputWeights[:, :-1]
         self.outputDelta[:, :-1].__add__(regularizationOut)
         self.inputDelta[:, :-1].__add__(regularizationIn)
 
-        # Fifth step
+        # return updated weight vector
         flatIn = self.inputDelta.ravel()
         flatOut = self.outputDelta.ravel()
         return np.append(flatIn, flatOut)
+    
+    def gradientChecking(self):
+        print("sen")
 
     def train(self, trainingData, trainingLabels, validationData, validationLabels):
+        # basic intiialization
         self.trainData = trainingData
         self.trainLabels = trainingLabels
         self.validData = validationData
@@ -96,7 +102,6 @@ class NeuralNetworkClassifier():
             else:
                 self.trueOut[:,1] = label # if there is one output neuron
     
-
         flatInWeights = self.inputWeights.ravel()
         flatOutWeights = self.outputWeights.ravel()
         theta = np.append(flatInWeights, flatOutWeights)
@@ -107,7 +112,33 @@ class NeuralNetworkClassifier():
         self.outputWeights = outPreReshape.reshape((self.numOutput, self.numHidden + 1))
 
     def classification(self, testData):
-        print("Implement classification here.")
+        "input activation"
+        "for classify in case the difference of size between trainData and testData "
+        self.size_test = len(list(testData))
+        features_test = [];
+        for datum in testData:
+            feature = list(datum.values())
+            features_test.append(feature)
+        test_set = np.array(features_test, np.int32)
+        feature_test_set = test_set.transpose()
+
+        if feature_test_set.shape[1] != self.inputActivation.shape[1]:
+            self.inputActivation = np.ones((self.input + 1, feature_test_set.shape[1]))
+            self.hiddenActivation = np.ones((self.hidden + 1, feature_test_set.shape[1]))
+            self.outputActivation = np.ones((self.output + 1, feature_test_set.shape[1]))
+        self.inputActivation[:-1, :] = feature_test_set
+
+        "hidden activation"
+        hiddenZ = self.inputWeights.dot(self.inputActivation)
+        self.hiddenActivation[:-1, :] = sigmoid(hiddenZ)
+
+        "output activation"
+        outputZ = self.outputWeights.dot(self.hiddenActivation)
+        self.outputActivation = sigmoid(outputZ)
+        if self.output > 1:
+            return np.argmax(self.outputActivation, axis=0).tolist()
+        else:
+            return (self.outputActivation>0.5).ravel()
 
     def costFunction(self, input, output):
         return -1 * ((input * np.log(output)) + ((1 - input)*np.log(1 - output)))
@@ -116,11 +147,16 @@ class NeuralNetworkClassifier():
 #################### HELPER FUNCTIONS ####################
 
     def getTrainingSet(self):
+        # the training size will be the size of the list of the training data given
         self.training_size = len(list(self.trainData))
         feat_train = []
+        # for every data input in the training data
         for data in self.trainData:
+            # the feature will just be the list of data values
             feat = list(data.values())
+            # add the new feat to the features we want to use to train nn
             feat_train.append(feat)
+        
         training_set = np.array(feat_train, np.int32)   
         return training_set
 
