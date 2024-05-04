@@ -97,6 +97,7 @@ class NeuralNetworkClassifier():
     def train(self, trainingData, trainingLabels, validationData, validationLabels):
         # basic intiialization - I changed all these inputs to lists
         self.trainData = list(trainingData)
+        print(self.trainData)
         self.trainLabels = list(trainingLabels)
         self.validData = list(validationData)
         self.validLabels = list(validationLabels)
@@ -126,12 +127,10 @@ class NeuralNetworkClassifier():
     def classify(self, testData):
         self.testData = testData
         feat_test_set = self.getTestSet()
-
-        print(feat)
-        if feat_test_set.shape[1] != self.inputActivation.shape[1]:
-            self.inputActivation = np.ones((self.numInput + 1, feat_test_set.shape[1]))
-            self.hiddenActivation = np.ones((self.numHidden + 1, feat_test_set.shape[1]))
-            self.outputActivation = np.ones((self.numOutput + 1, feat_test_set.shape[1]))
+        if feat_test_set.shape[0] != self.inputActivation.shape[0]: # I changed all of these to 0 instead of 1
+            self.inputActivation = np.ones((self.numInput + 1, feat_test_set.shape[0]))
+            self.hiddenActivation = np.ones((self.numHidden + 1, feat_test_set.shape[0]))
+            self.outputActivation = np.ones((self.numOutput + 1, feat_test_set.shape[0]))
         self.inputActivation[:-1, :] = feat_test_set
 
         hiddenZ = self.inputWeights.dot(self.inputActivation)
@@ -140,10 +139,14 @@ class NeuralNetworkClassifier():
         outputZ = self.outputWeights.dot(self.hiddenActivation)
         self.outputActivation = activationFunctionSigmoid(outputZ)
         
-        if self.output > 1:
-            return np.argmax(self.outputActivation, axis=0).tolist()
+        if self.numOutput > 1:
+            res = np.argmax(self.outputActivation, axis=0).tolist()
+            print(res)
+            return res
         else:
-            return (self.outputActivation>0.5).ravel()
+            res = (self.outputActivation>0.5).ravel()
+            print(res)
+            return res
 
     def costFunction(self, input, output):
         return -1 * ((input * np.log(output)) + ((1 - input)*np.log(1 - output)))
@@ -161,7 +164,6 @@ class NeuralNetworkClassifier():
         feat_test_set = test_set.transpose()
         return feat_test_set
     
-    
     def getTrainingSet(self):
         # the training size will be the size of the list of the training data given
         self.training_size = len(list(self.trainData))
@@ -170,6 +172,7 @@ class NeuralNetworkClassifier():
         for data in self.trainData:
             # the feature will just be the list of data values
             feat = list(data.values())
+            print(feat)
             # add the new feat to the features we want to use to train nn
             feat_train.append(feat)
         
